@@ -13,10 +13,23 @@ from utils.data.load_data import create_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss
 from utils.common.loss_function import SSIMLoss
 from utils.model.varnet import VarNet
+from utils.model.archs.NAFNet_arch import NAFNet
 from utils.data.mraugment.data_augment import DataAugmentor
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn.utils import clip_grad_norm_
 import os
+
+class ConcatenateModels(nn.Module):
+    def __init__(self, varnet_model, nafnet_model):
+        super(ConcatenateModels, self).__init__()
+        self.varnet_model = varnet_model
+        self.nafnet_model = nafnet_model
+
+    def forward(self, kspace, mask):
+        varnet_output = self.varnet_model(kspace, mask)
+        nafnet_output = self.nafnet_model(varnet_output)
+        
+        return nafnet_output
 
 def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     model.train()
@@ -31,7 +44,6 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         kspace = kspace.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
-
         output = model(kspace, mask)
         loss = loss_type(output, target, maximum)
         loss = loss/accumulation_steps
@@ -128,9 +140,13 @@ def train(args):
     torch.cuda.set_device(device)
     print('Current cuda device: ', torch.cuda.current_device())
 
-    model = VarNet(num_cascades=args.cascade, 
+    varnetmodel = VarNet(num_cascades=args.cascade, 
                    chans=args.chans, 
                    sens_chans=args.sens_chans)
+    nafnetmodel = NAFNet(img_channel=1, width=8, middle_blk_num=1,
+                      enc_blk_nums=[1, 1, 1, 12], dec_blk_nums=[1, 1, 1, 1])
+    
+    model = ConcatenateModels(varnetmodel, nafnetmodel)
     model.to(device=device)
 
     """
@@ -208,3 +224,4 @@ def train(args):
             print(
                 f'ForwardTime = {time.perf_counter() - start:.4f}s',
             )
+            

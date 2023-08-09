@@ -23,10 +23,11 @@ def parse():
     parser.add_argument('-c', '--clip_value', type=float, default=2.0, help='Clip value')
     parser.add_argument('-e', '--num-epochs', type=int, default=1, help='Number of epochs')
     parser.add_argument('-l', '--lr', type=float, default=1e-3, help='Learning rate')
-    parser.add_argument('-r', '--report-interval', type=int, default=200, help='Report interval')
+    parser.add_argument('-r', '--report-interval', type=int, default=1, help='Report interval')
     parser.add_argument('-n', '--net-name', type=Path, default='test_varnet', help='Name of network')
     parser.add_argument('-t', '--data-path-train', type=Path, default='/Data/train/', help='Directory of train data')
     parser.add_argument('-v', '--data-path-val', type=Path, default='/Data/val/', help='Directory of validation data')
+    
     
     parser.add_argument('--cascade', type=int, default=4, help='Number of cascades | Should be less than 12') ## important hyperparameter
     parser.add_argument('--chans', type=int, default=12, help='Number of channels for cascade U-Net | 18 in original varnet') ## important hyperparameter
@@ -56,7 +57,7 @@ def parse():
     parser.add_argument(
             '--aug_strength', 
             type=float, 
-            default=0.35, 
+            default=0.55, 
             help='Augmentation strength, combined with --aug_schedule determines the augmentation strength in each epoch'
         )
     parser.add_argument(

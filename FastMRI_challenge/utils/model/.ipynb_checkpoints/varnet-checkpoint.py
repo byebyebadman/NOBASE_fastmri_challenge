@@ -121,7 +121,7 @@ class NormUnet(nn.Module):
         x = self.unpad(x, *pad_sizes)
         x = self.unnorm(x, mean, std)
         x = self.chan_complex_to_last_dim(x)
-
+        
         return x
 
 
@@ -205,7 +205,7 @@ class VarNet(nn.Module):
     A full variational network model.
 
     This model applies a combination of soft data consistency with a U-Net
-    regularizer. To use non-U-Net regularizers, use VarNetBlock.
+    regularizer. To use non-U-Net regularizers, use VarNetBlock...
     """
 
     def __init__(
