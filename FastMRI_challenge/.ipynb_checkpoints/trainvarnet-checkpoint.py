@@ -21,9 +21,9 @@ def parse():
     parser.add_argument('-b', '--batch-size', type=int, default=1, help='Batch size')
     parser.add_argument('-a', '--accumulation_steps', type=int, default=4, help='Gradient accumlation steps')
     parser.add_argument('-c', '--clip_value', type=float, default=2.0, help='Clip value')
-    parser.add_argument('-e', '--num-epochs', type=int, default=1, help='Number of epochs')
+    parser.add_argument('-e', '--num-epochs', type=int, default=10, help='Number of epochs')
     parser.add_argument('-l', '--lr', type=float, default=1e-3, help='Learning rate')
-    parser.add_argument('-r', '--report-interval', type=int, default=1, help='Report interval')
+    parser.add_argument('-r', '--report-interval', type=int, default=2000, help='Report interval')
     parser.add_argument('-n', '--net-name', type=Path, default='test_varnet', help='Name of network')
     parser.add_argument('-t', '--data-path-train', type=Path, default='/Data/train/', help='Directory of train data')
     parser.add_argument('-v', '--data-path-val', type=Path, default='/Data/val/', help='Directory of validation data')
@@ -57,7 +57,7 @@ def parse():
     parser.add_argument(
             '--aug_strength', 
             type=float, 
-            default=0.55, 
+            default=0.35, 
             help='Augmentation strength, combined with --aug_schedule determines the augmentation strength in each epoch'
         )
     parser.add_argument(
