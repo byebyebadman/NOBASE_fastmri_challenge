@@ -28,10 +28,10 @@ class DataTransform:
         seed = None if not self.use_seed else tuple(map(ord, fname))
         
         if not self.isforward and self.use_augment:
-            if self.augmentor.schedule_p() > 0.0: 
+            if self.augmentor.schedule_p() > 0.0: #train set, augmentation probability 가 0보다 클 때
                 input = to_tensor(input)
-                input = torch.stack((input.real, input.imag), dim=-1)
-                input, target = self.augmentor(input, target.shape)
+                input = torch.stack((input.real, input.imag), dim=-1) # 복소수 텐서를 실수 2개로 이루어진 텐서로 변환
+                input, target = self.augmentor(input, target.shape) #augmentation 진행
                 mask = torch.from_numpy(mask.reshape(1, 1, input.shape[-2], 1).astype(np.float32)).byte()
                 kspace = input * mask
                 
@@ -42,21 +42,21 @@ class DataTransform:
                 target = to_tensor(target)
             maximum = attrs[self.max_key]
             
-        elif not self.isforward and not self.use_augment:
+        elif not self.isforward and not self.use_augment: # validation set
             kspace = to_tensor(input * mask)
             kspace = torch.stack((kspace.real, kspace.imag), dim=-1)
             mask = torch.from_numpy(mask.reshape(1, 1, kspace.shape[-2], 1).astype(np.float32)).byte()
             target = to_tensor(target)
             maximum = attrs[self.max_key]
             
-        else:
+        else: # test set
             kspace = to_tensor(input * mask)
             kspace = torch.stack((kspace.real, kspace.imag), dim=-1)
             mask = torch.from_numpy(mask.reshape(1, 1, kspace.shape[-2], 1).astype(np.float32)).byte()
             target = -1
             maximum = -1
             
-        #kspace = kspace.to(torch.float16)
+      
                
             
         return mask, kspace, target, maximum, fname, slice

@@ -19,7 +19,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn.utils import clip_grad_norm_
 import os
 
-class ConcatenateModels(nn.Module):
+class ConcatenateModels(nn.Module): # 모델 결합 부분
     def __init__(self, varnet_model, nafnet_model):
         super(ConcatenateModels, self).__init__()
         self.varnet_model = varnet_model
@@ -44,15 +44,14 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         kspace = kspace.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
-        output = model(kspace * 10**7 , mask) * 10 ** -7
+        output = model(kspace * 10**7 , mask) * 10 ** -7 # train loss가 1로 튀는 것을 방지하기 위한
 
-        loss = loss_type(output, target, maximum)
-        loss = loss #/accumulation_steps
+        loss = loss_type(output, target, maximum) 
+        loss = loss 
         loss.backward()
-        clip_grad_norm_(model.parameters(), clip_value)
+        clip_grad_norm_(model.parameters(), clip_value) # clip gradient
         
-        #if (iter + 1) % accumulation_steps == 0 or (iter == len(data_loader) - 1):
-        # Update parameters after accumulating gradients for accum_steps batches
+
         optimizer.step()
         optimizer.zero_grad()
             
@@ -169,7 +168,7 @@ def train(args):
     loss_type = SSIMLoss().to(device=device)
     optimizer = torch.optim.RAdam(model.parameters(), args.lr)
     # After creating the optimizer
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 8 ,  gamma=0.5, last_epoch=- 1, verbose=True)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 8 ,  gamma=0.5, last_epoch=- 1, verbose=True)  # step function 사용
 
     best_val_loss = 1.
     start_epoch = 0
