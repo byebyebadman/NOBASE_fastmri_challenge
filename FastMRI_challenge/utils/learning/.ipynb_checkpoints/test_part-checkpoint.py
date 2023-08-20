@@ -29,8 +29,10 @@ def test(args, model, data_loader):
         for (mask, kspace, _, _, fnames, slices) in data_loader:
             kspace = kspace.cuda(non_blocking=True)
             mask = mask.cuda(non_blocking=True)
-            output = model(kspace, mask)
+            
+            output = model(kspace * 10**7 , mask) * 10 ** -7
 
+            
             for i in range(output.shape[0]):
                 reconstructions[fnames[i]][int(slices[i])] = output[i].cpu().numpy()
 
@@ -51,7 +53,7 @@ def forward(args):
                    chans=args.chans, 
                    sens_chans=args.sens_chans)
     nafnetmodel = NAFNet(img_channel=1, width=8, middle_blk_num=1,
-                      enc_blk_nums=[1, 1, 1, 12], dec_blk_nums=[1, 1, 1, 1])
+                      enc_blk_nums=[1, 1, 1, 20], dec_blk_nums=[1, 1, 1, 1])
     
     model = ConcatenateModels(varnetmodel, nafnetmodel)
     model.to(device=device)

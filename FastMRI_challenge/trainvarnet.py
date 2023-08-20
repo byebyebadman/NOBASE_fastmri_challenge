@@ -19,9 +19,9 @@ def parse():
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-g', '--GPU-NUM', type=int, default=0, help='GPU number to allocate')
     parser.add_argument('-b', '--batch-size', type=int, default=1, help='Batch size')
-    parser.add_argument('-a', '--accumulation_steps', type=int, default=4, help='Gradient accumlation steps')
+    parser.add_argument('-a', '--accumulation_steps', type=int, default=1, help='Gradient accumlation steps')
     parser.add_argument('-c', '--clip_value', type=float, default=0.01, help='Clip value')
-    parser.add_argument('-e', '--num-epochs', type=int, default=20, help='Number of epochs')
+    parser.add_argument('-e', '--num-epochs', type=int, default=15, help='Number of epochs')
     parser.add_argument('-l', '--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('-r', '--report-interval', type=int, default=1000, help='Report interval')
     parser.add_argument('-n', '--net-name', type=Path, default='test_varnet', help='Name of network')
@@ -57,7 +57,7 @@ def parse():
     parser.add_argument(
             '--aug_strength', 
             type=float, 
-            default=0.35, 
+            default=0.30, 
             help='Augmentation strength, combined with --aug_schedule determines the augmentation strength in each epoch'
         )
     parser.add_argument(

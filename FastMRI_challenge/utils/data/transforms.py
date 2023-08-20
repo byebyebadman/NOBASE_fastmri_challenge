@@ -55,6 +55,8 @@ class DataTransform:
             mask = torch.from_numpy(mask.reshape(1, 1, kspace.shape[-2], 1).astype(np.float32)).byte()
             target = -1
             maximum = -1
+            
+        #kspace = kspace.to(torch.float16)
                
             
         return mask, kspace, target, maximum, fname, slice

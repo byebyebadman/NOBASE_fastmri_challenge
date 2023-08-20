@@ -44,16 +44,17 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         kspace = kspace.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
-        output = model(kspace, mask)
+        output = model(kspace * 10**7 , mask) * 10 ** -7
+
         loss = loss_type(output, target, maximum)
-        loss = loss/accumulation_steps
+        loss = loss #/accumulation_steps
         loss.backward()
         clip_grad_norm_(model.parameters(), clip_value)
         
-        if (iter + 1) % accumulation_steps == 0 or (iter == len(data_loader) - 1):
+        #if (iter + 1) % accumulation_steps == 0 or (iter == len(data_loader) - 1):
         # Update parameters after accumulating gradients for accum_steps batches
-            optimizer.step()
-            optimizer.zero_grad()
+        optimizer.step()
+        optimizer.zero_grad()
             
 
         total_loss += loss.item() * accumulation_steps
@@ -62,7 +63,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
             print(
                 f'Epoch = [{epoch:3d}/{args.num_epochs:3d}] '
                 f'Iter = [{iter:4d}/{len(data_loader):4d}] '
-                f'Loss = {loss.item() * accumulation_steps:.4g} '
+                f'Loss = {loss.item():.4g} '
                 f'Time = {time.perf_counter() - start_iter:.4f}s',
             )
             start_iter = time.perf_counter()
@@ -81,7 +82,7 @@ def validate(args, model, data_loader):
             mask, kspace, target, _, fnames, slices = data
             kspace = kspace.cuda(non_blocking=True)
             mask = mask.cuda(non_blocking=True)
-            output = model(kspace, mask)
+            output = model(kspace * 10**7 , mask) * 10 ** -7
 
             for i in range(output.shape[0]):
                 reconstructions[fnames[i]][int(slices[i])] = output[i].cpu().numpy()
@@ -144,7 +145,7 @@ def train(args):
                    chans=args.chans, 
                    sens_chans=args.sens_chans)
     nafnetmodel = NAFNet(img_channel=1, width=8, middle_blk_num=1,
-                      enc_blk_nums=[1, 1, 1, 12], dec_blk_nums=[1, 1, 1, 1])
+                      enc_blk_nums=[1, 1, 1, 20], dec_blk_nums=[1, 1, 1, 1])
     
     model = ConcatenateModels(varnetmodel, nafnetmodel)
     model.to(device=device)
@@ -168,7 +169,7 @@ def train(args):
     loss_type = SSIMLoss().to(device=device)
     optimizer = torch.optim.RAdam(model.parameters(), args.lr)
     # After creating the optimizer
-    lr_scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 8 ,  gamma=0.5, last_epoch=- 1, verbose=True)
 
     best_val_loss = 1.
     start_epoch = 0
@@ -206,7 +207,7 @@ def train(args):
 
 
         val_loss = val_loss / num_subjects
-        lr_scheduler.step(val_loss);
+        lr_scheduler.step();
 
         is_new_best = val_loss < best_val_loss
         best_val_loss = min(best_val_loss, val_loss)
